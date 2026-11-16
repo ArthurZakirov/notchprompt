@@ -156,6 +156,9 @@ struct ContentView: View {
     private var shortcutsSection: some View {
         SettingsSection(title: "Keyboard Shortcuts") {
             VStack(alignment: .leading, spacing: 6) {
+                shortcutRow("Option+Command+F", "Camera Mode / return to desktop")
+                shortcutRow("Enter / Space", "Camera Mode: forward / backward")
+                shortcutRow("P / R / Escape", "Camera Mode: play / reset / exit")
                 shortcutRow("Option+Command+P", "Start / Pause")
                 shortcutRow("Option+Command+R", "Reset scroll")
                 shortcutRow("Option+Command+J", "Jump back 5 seconds")

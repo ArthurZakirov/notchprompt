@@ -26,6 +26,23 @@ private final class OverlayPanel: NSPanel {
         super.sendEvent(event)
     }
 
+    override func keyDown(with event: NSEvent) {
+        let model = PrompterModel.shared
+        guard model.isCameraMode,
+              event.modifierFlags.intersection([.command, .option, .control]).isEmpty else {
+            super.keyDown(with: event)
+            return
+        }
+        switch event.keyCode {
+        case 53: model.toggleCameraMode()
+        case 36, 76: model.handleManualScroll(deltaPoints: CGFloat(model.fontSize * 1.2))
+        case 49: model.handleManualScroll(deltaPoints: -CGFloat(model.fontSize * 1.2))
+        case 35: model.toggleRunning()
+        case 15: model.resetScroll()
+        default: super.keyDown(with: event)
+        }
+    }
+
     @objc func paste(_ sender: Any?) {
         guard let text = NSPasteboard.general.string(forType: .string) else { return }
         Task { @MainActor in
@@ -61,6 +78,8 @@ final class OverlayWindowController {
     private let padding: CGFloat = 0
     private let inMenuBarStrip: Bool = true
     private var lastFrame: NSRect?
+    private var backdrops: [NSWindow] = []
+    private var previousApp: NSRunningApplication?
 
     init(model: PrompterModel) {
         self.model = model
@@ -119,7 +138,38 @@ final class OverlayWindowController {
 #endif
     }
 
+    func setCameraMode(_ enabled: Bool) {
+        backdrops.forEach { $0.orderOut(nil) }
+        backdrops.removeAll()
+        if enabled {
+            previousApp = NSWorkspace.shared.frontmostApplication
+            rebuildBackdrops()
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+        } else {
+            previousApp?.activate(options: [])
+            previousApp = nil
+        }
+    }
+
+    private func rebuildBackdrops() {
+        backdrops.forEach { $0.orderOut(nil) }
+        backdrops = NSScreen.screens.map { screen in
+            let backdrop = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: false)
+            backdrop.backgroundColor = .black
+            backdrop.isOpaque = true
+            backdrop.hasShadow = false
+            backdrop.isReleasedWhenClosed = false
+            backdrop.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue - 1)
+            backdrop.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+            backdrop.orderFrontRegardless()
+            return backdrop
+        }
+    }
+
     func reposition() {
+        if model.isCameraMode { rebuildBackdrops() }
+
         guard let screen = targetScreen() ?? NSScreen.main ?? NSScreen.screens.first else { return }
 
         let width = CGFloat(model.overlayWidth)

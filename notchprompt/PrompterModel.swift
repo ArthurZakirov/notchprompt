@@ -41,6 +41,7 @@ Paste your script here.
 Tip: Use the menu bar icon to start/pause or reset the scroll.
 """
 
+    @Published var isCameraMode: Bool = false
     @Published var isRunning: Bool = false
     @Published var manualScrollEnabled: Bool = false
     @Published var isOverlayVisible: Bool = true
@@ -109,6 +110,15 @@ Tip: Use the menu bar icon to start/pause or reset the scroll.
         let wasEmpty = script.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         script = text
         if wasEmpty {
+            hasStartedSession = true
+        }
+    }
+
+    func toggleCameraMode() {
+        isCameraMode.toggle()
+        isOverlayVisible = isCameraMode
+        stop()
+        if isCameraMode {
             hasStartedSession = true
         }
     }

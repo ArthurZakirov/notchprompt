@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ScrollingTextView: View {
     let text: String
+    let pinToTop: Bool
     let fontSize: CGFloat
     let speedPointsPerSecond: Double
     let isRunning: Bool
@@ -56,11 +57,7 @@ struct ScrollingTextView: View {
     }
 
     private var emptyStateMessage: String {
-        "No script yet.\nOpen Settings and paste your script to begin."
-    }
-
-    private var initialStateMessage: String {
-        "Ready to prompt.\nPress Start to begin countdown."
+        "No script yet.\nOpen NP → Script Editor to add your script."
     }
 
     private var clampedFadeFraction: CGFloat {
@@ -81,6 +78,7 @@ struct ScrollingTextView: View {
     }
 
     private var startAnchorOffset: CGFloat {
+        if pinToTop { return 0 }
         let fallback = max(8, min(fontSize * 0.45, 22))
         guard viewportHeight > 1 else { return fallback }
 
@@ -121,7 +119,7 @@ struct ScrollingTextView: View {
         GeometryReader { viewportProxy in
             TimelineView(.periodic(from: .now, by: tickInterval)) { timeline in
                 ZStack(alignment: .topLeading) {
-                    if hasContent && hasStartedSession {
+                    if hasContent {
                         // Always render repeated copies so toggling between infinite
                         // and stop-at-end never causes a structural view rebuild.
                         let copies = repetitionCount(for: viewportProxy.size.height)
@@ -131,13 +129,6 @@ struct ScrollingTextView: View {
                             }
                         }
                         .offset(y: effectiveOffsetY)
-                    } else if hasContent {
-                        Text(initialStateMessage)
-                            .font(.system(size: max(fontSize * 0.72, 13), weight: .regular, design: .monospaced))
-                            .foregroundStyle(.white.opacity(0.75))
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                            .padding(.horizontal, 12)
                     } else {
                         Text(emptyStateMessage)
                             .font(.system(size: max(fontSize * 0.72, 13), weight: .regular, design: .monospaced))
@@ -204,7 +195,7 @@ struct ScrollingTextView: View {
             }
         }
         .mask(edgeFadeMask)
-        .overlay(edgeSofteningOverlay)
+        .overlay(edgeSofteningOverlay.opacity(pinToTop ? 0 : 1))
     }
 
     @ViewBuilder

@@ -1,4 +1,48 @@
-# Notchprompt
+# Notchprompt Camera
+
+Personal camera-mode fork of [saif0200/notchprompt](https://github.com/saif0200/notchprompt).
+
+## Camera workflow
+
+Open the app, then use these controls:
+
+| Key | Action |
+| --- | --- |
+| Option–Command–F | Enter or leave Camera Mode globally |
+| Enter | Move text forward while Camera Mode is focused |
+| Space | Move text backward while Camera Mode is focused |
+| P | Start/pause automatic scrolling in Camera Mode |
+| R | Reset to the beginning in Camera Mode |
+| Escape | Stop playback, hide the prompt and restore the desktop |
+
+Camera Mode blacks out every connected display and places the script at the
+physical top-center of the display chosen in **NP → Settings**. The first line
+has no added top padding. The control row sits below the text in normal overlay
+mode and is hidden in Camera Mode. **NP → Script Editor → Import** loads a script.
+A camera above an external monitor is the intended setup; a physical MacBook
+notch can obscure text at the top center.
+
+## Local sandboxed build
+
+Build from inspected sources with Apple's Command Line Tools:
+
+```sh
+bash scripts/build_local_camera.sh
+```
+
+The script uses the installed macOS 26.5 SDK by default; set `SDKROOT` to select
+another compatible installed SDK. It builds only Swift sources and Apple
+frameworks, creates `~/Applications/Notchprompt Camera.app`, and applies an ad-hoc
+signature with App Sandbox, hardened runtime and user-selected file access.
+It grants no network, microphone, camera or Accessibility entitlements. This is
+a local build, not an Apple-notarized distribution, and is not a malware-free
+guarantee. No Gatekeeper settings need to be disabled.
+
+The upstream import/export feature can invoke Apple's `textutil` for office
+formats. Plain-text/Markdown import is the tested workflow; office conversion
+and capture invisibility are not guaranteed.
+
+## Upstream features
 
 <p align="center">
   <img src="assets/banner.png" alt="Notchprompt Banner" width="100%">

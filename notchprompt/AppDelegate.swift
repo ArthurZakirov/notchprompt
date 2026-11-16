@@ -57,6 +57,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     private func wireModel() {
+        model.$isCameraMode
+            .receive(on: RunLoop.main)
+            .sink { [weak self] enabled in
+                self?.overlayController?.setCameraMode(enabled)
+            }
+            .store(in: &cancellables)
+
         model.$privacyModeEnabled
             .receive(on: RunLoop.main)
             .sink { [weak self] enabled in
@@ -148,6 +155,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         item.button?.toolTip = "Notchprompt"
 
         let menu = NSMenu()
+        let camera = NSMenuItem(title: "Camera Mode (Esc to exit)", action: #selector(toggleCameraMode), keyEquivalent: "f")
+        camera.target = self
+        camera.keyEquivalentModifierMask = shortcutModifiers
+        menu.addItem(camera)
+
 
         let startPause = NSMenuItem(
             title: "Start/Pause",
@@ -269,6 +281,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     // MARK: - Actions
 
+    @objc private func toggleCameraMode() {
+        model.toggleCameraMode()
+    }
+
     @objc private func toggleRunning() {
         model.toggleRunning()
     }
@@ -321,6 +337,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     private func performShortcut(_ command: ShortcutCommand) {
         switch command {
+        case .cameraMode:
+            model.toggleCameraMode()
         case .startPause:
             model.toggleRunning()
         case .reset:

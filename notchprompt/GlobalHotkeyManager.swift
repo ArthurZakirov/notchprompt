@@ -3,6 +3,7 @@ import Carbon
 import Foundation
 
 enum ShortcutCommand: CaseIterable {
+    case cameraMode
     case startPause
     case reset
     case jumpBack
@@ -13,6 +14,8 @@ enum ShortcutCommand: CaseIterable {
 
     var keyEquivalent: String {
         switch self {
+        case .cameraMode:
+            return "f"
         case .startPause:
             return "p"
         case .reset:
@@ -32,6 +35,8 @@ enum ShortcutCommand: CaseIterable {
 
     var displayShortcut: String {
         switch self {
+        case .cameraMode:
+            return "⌥⌘F"
         case .startPause:
             return "⌥⌘P"
         case .reset:
@@ -51,6 +56,8 @@ enum ShortcutCommand: CaseIterable {
 
     fileprivate var hotKeyID: UInt32 {
         switch self {
+        case .cameraMode:
+            return 8
         case .startPause:
             return 1
         case .reset:
@@ -70,6 +77,8 @@ enum ShortcutCommand: CaseIterable {
 
     fileprivate var keyCode: UInt32 {
         switch self {
+        case .cameraMode:
+            return UInt32(kVK_ANSI_F)
         case .startPause:
             return UInt32(kVK_ANSI_P)
         case .reset:
