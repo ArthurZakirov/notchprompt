@@ -17,6 +17,7 @@ private final class OverlayPanel: NSPanel {
     /// recognizers process them in a key-window context.  `sendEvent` fires
     /// before any view dispatch, unlike `mouseDown` which fires after.
     override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown && handleCameraKey(event) { return }
         switch event.type {
         case .leftMouseDown, .rightMouseDown, .otherMouseDown:
             if !isKeyWindow { makeKey() }
@@ -26,12 +27,11 @@ private final class OverlayPanel: NSPanel {
         super.sendEvent(event)
     }
 
-    override func keyDown(with event: NSEvent) {
+    private func handleCameraKey(_ event: NSEvent) -> Bool {
         let model = PrompterModel.shared
         guard model.isCameraMode,
               event.modifierFlags.intersection([.command, .option, .control]).isEmpty else {
-            super.keyDown(with: event)
-            return
+            return false
         }
         switch event.keyCode {
         case 53: model.toggleCameraMode()
@@ -39,8 +39,9 @@ private final class OverlayPanel: NSPanel {
         case 49: model.handleManualScroll(deltaPoints: -CGFloat(model.fontSize * 1.2))
         case 35: model.toggleRunning()
         case 15: model.resetScroll()
-        default: super.keyDown(with: event)
+        default: return false
         }
+        return true
     }
 
     @objc func paste(_ sender: Any?) {
@@ -89,7 +90,7 @@ final class OverlayWindowController {
         let initialFrame = NSRect(x: 0, y: 0, width: model.overlayWidth, height: model.overlayHeight)
         let panel = OverlayPanel(
             contentRect: initialFrame,
-            styleMask: [.borderless, .nonactivatingPanel],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
