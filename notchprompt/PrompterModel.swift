@@ -11,6 +11,14 @@ import CoreGraphics
 
 @MainActor
 final class PrompterModel: ObservableObject {
+    enum CameraPlacement: String, CaseIterable {
+        case automatic = "Centered below cutout"
+        case left = "Left of cutout"
+        case right = "Right of cutout"
+    }
+
+    @Published var cameraPlacement: CameraPlacement = .automatic
+
     enum ScrollMode: String, CaseIterable {
         case infinite
         case stopAtEnd
@@ -298,6 +306,7 @@ Tip: Use the menu bar icon to start/pause or reset the scroll.
             script = savedScript
         }
 
+        cameraPlacement = defaults.string(forKey: "cameraPlacement").flatMap(CameraPlacement.init(rawValue:)) ?? .automatic
         privacyModeEnabled = defaults.object(forKey: DefaultsKey.privacyModeEnabled) as? Bool ?? privacyModeEnabled
         isOverlayVisible = defaults.object(forKey: DefaultsKey.isOverlayVisible) as? Bool ?? true
         // Never auto-start on launch; require explicit user start each session.
@@ -331,6 +340,7 @@ Tip: Use the menu bar icon to start/pause or reset the scroll.
 
     func saveToDefaults() {
         let defaults = UserDefaults.standard
+        defaults.set(cameraPlacement.rawValue, forKey: "cameraPlacement")
         defaults.set(true, forKey: DefaultsKey.hasSavedSession)
         defaults.set(script, forKey: DefaultsKey.script)
         defaults.set(isRunning, forKey: DefaultsKey.isRunning)

@@ -229,7 +229,7 @@ struct OverlayView: View {
                 .allowsHitTesting(false)
             }
         }
-        .frame(width: model.overlayWidth, height: model.overlayHeight)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

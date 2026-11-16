@@ -89,6 +89,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             }
             .store(in: &cancellables)
 
+        model.$cameraPlacement
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.overlayController?.reposition() }
+            .store(in: &cancellables)
+
         model.$selectedScreenID
             .removeDuplicates()
             .receive(on: RunLoop.main)
@@ -118,6 +123,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             model.$countdownSeconds.map { _ in () }.eraseToAnyPublisher(),
             model.$countdownBehavior.map { _ in () }.eraseToAnyPublisher(),
             model.$scrollMode.map { _ in () }.eraseToAnyPublisher(),
+            model.$cameraPlacement.map { _ in () }.eraseToAnyPublisher(),
             model.$selectedScreenID.map { _ in () }.eraseToAnyPublisher()
         )
         .debounce(for: .milliseconds(250), scheduler: RunLoop.main)

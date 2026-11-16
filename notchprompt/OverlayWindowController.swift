@@ -172,15 +172,29 @@ final class OverlayWindowController {
 
         guard let screen = targetScreen() ?? NSScreen.main ?? NSScreen.screens.first else { return }
 
-        let width = CGFloat(model.overlayWidth)
+        var width = min(CGFloat(model.overlayWidth), screen.frame.width)
         let desiredHeight = CGFloat(model.overlayHeight)
 
-        let x = (screen.frame.midX - (width / 2)).rounded()
+        var x = (screen.frame.midX - width / 2).rounded()
+        var topRefY = screen.frame.maxY
+        if screen.safeAreaInsets.top > 0 {
+            let side: NSRect?
+            switch model.cameraPlacement {
+            case .automatic: side = nil
+            case .left: side = screen.auxiliaryTopLeftArea
+            case .right: side = screen.auxiliaryTopRightArea
+            }
+            if let side, side.width >= 160 {
+                width = min(width, side.width)
+                x = model.cameraPlacement == .left ? side.maxX - width : side.minX
+            } else {
+                topRefY -= screen.safeAreaInsets.top
+            }
+        }
 
         // Always pin to the very top of the physical screen so we cover the notch/menu bar
         // even when macOS auto-hides the menu bar (reservedTop may report as 0).
         let height = desiredHeight
-        let topRefY = screen.frame.maxY
         let y = (topRefY - height - padding).rounded()
         let targetFrame = NSRect(x: x, y: y, width: width.rounded(), height: height.rounded())
 

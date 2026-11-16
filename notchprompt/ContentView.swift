@@ -125,6 +125,14 @@ struct ContentView: View {
 
     private var displaySection: some View {
         SettingsSection(title: "Display") {
+            Picker("Camera cutout", selection: $model.cameraPlacement) {
+                ForEach(PrompterModel.CameraPlacement.allCases, id: \.self) { placement in
+                    Text(placement.rawValue).tag(placement)
+                }
+            }
+            Text("Applies to displays with a camera cutout.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             HStack {
                 Text("Show overlay on")
                     .frame(width: rowLabelWidth, alignment: .leading)
