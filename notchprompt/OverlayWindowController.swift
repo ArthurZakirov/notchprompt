@@ -17,6 +17,7 @@ private final class OverlayPanel: NSPanel {
     /// recognizers process them in a key-window context.  `sendEvent` fires
     /// before any view dispatch, unlike `mouseDown` which fires after.
     override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown && handleCameraKey(event) { return }
         switch event.type {
         case .leftMouseDown, .rightMouseDown, .otherMouseDown:
             if !isKeyWindow { makeKey() }
@@ -24,6 +25,23 @@ private final class OverlayPanel: NSPanel {
             break
         }
         super.sendEvent(event)
+    }
+
+    private func handleCameraKey(_ event: NSEvent) -> Bool {
+        let model = PrompterModel.shared
+        guard model.isCameraMode,
+              event.modifierFlags.intersection([.command, .option, .control]).isEmpty else {
+            return false
+        }
+        switch event.keyCode {
+        case 53: model.toggleCameraMode()
+        case 36, 76: model.handleManualScroll(deltaPoints: CGFloat(model.fontSize * 1.2))
+        case 49: model.handleManualScroll(deltaPoints: -CGFloat(model.fontSize * 1.2))
+        case 35: model.toggleRunning()
+        case 15: model.resetScroll()
+        default: return false
+        }
+        return true
     }
 
     @objc func paste(_ sender: Any?) {
@@ -61,6 +79,8 @@ final class OverlayWindowController {
     private let padding: CGFloat = 0
     private let inMenuBarStrip: Bool = true
     private var lastFrame: NSRect?
+    private var backdrops: [NSWindow] = []
+    private var previousApp: NSRunningApplication?
 
     init(model: PrompterModel) {
         self.model = model
@@ -70,7 +90,7 @@ final class OverlayWindowController {
         let initialFrame = NSRect(x: 0, y: 0, width: model.overlayWidth, height: model.overlayHeight)
         let panel = OverlayPanel(
             contentRect: initialFrame,
-            styleMask: [.borderless, .nonactivatingPanel],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
@@ -119,18 +139,63 @@ final class OverlayWindowController {
 #endif
     }
 
+    func setCameraMode(_ enabled: Bool) {
+        backdrops.forEach { $0.orderOut(nil) }
+        backdrops.removeAll()
+        if enabled {
+            previousApp = NSWorkspace.shared.frontmostApplication
+            rebuildBackdrops()
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+        } else {
+            previousApp?.activate(options: [])
+            previousApp = nil
+        }
+    }
+
+    private func rebuildBackdrops() {
+        backdrops.forEach { $0.orderOut(nil) }
+        backdrops = NSScreen.screens.map { screen in
+            let backdrop = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: false)
+            backdrop.backgroundColor = .black
+            backdrop.isOpaque = true
+            backdrop.hasShadow = false
+            backdrop.isReleasedWhenClosed = false
+            backdrop.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue - 1)
+            backdrop.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+            backdrop.orderFrontRegardless()
+            return backdrop
+        }
+    }
+
     func reposition() {
+        if model.isCameraMode { rebuildBackdrops() }
+
         guard let screen = targetScreen() ?? NSScreen.main ?? NSScreen.screens.first else { return }
 
-        let width = CGFloat(model.overlayWidth)
+        var width = min(CGFloat(model.overlayWidth), screen.frame.width)
         let desiredHeight = CGFloat(model.overlayHeight)
 
-        let x = (screen.frame.midX - (width / 2)).rounded()
+        var x = (screen.frame.midX - width / 2).rounded()
+        var topRefY = screen.frame.maxY
+        if screen.safeAreaInsets.top > 0 {
+            let side: NSRect?
+            switch model.cameraPlacement {
+            case .automatic: side = nil
+            case .left: side = screen.auxiliaryTopLeftArea
+            case .right: side = screen.auxiliaryTopRightArea
+            }
+            if let side, side.width >= 160 {
+                width = min(width, side.width)
+                x = model.cameraPlacement == .left ? side.maxX - width : side.minX
+            } else {
+                topRefY -= screen.safeAreaInsets.top
+            }
+        }
 
         // Always pin to the very top of the physical screen so we cover the notch/menu bar
         // even when macOS auto-hides the menu bar (reservedTop may report as 0).
         let height = desiredHeight
-        let topRefY = screen.frame.maxY
         let y = (topRefY - height - padding).rounded()
         let targetFrame = NSRect(x: x, y: y, width: width.rounded(), height: height.rounded())
 

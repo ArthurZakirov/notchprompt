@@ -118,6 +118,7 @@ struct OverlayView: View {
             // subtle blur bands at the top/bottom to soften the exit.
             ScrollingTextView(
                 text: model.script,
+                pinToTop: true,
                 fontSize: CGFloat(model.fontSize),
                 speedPointsPerSecond: model.speedPointsPerSecond,
                 isRunning: model.isRunning,
@@ -127,7 +128,7 @@ struct OverlayView: View {
                 jumpBackDistancePoints: model.jumpBackDistancePoints,
                 manualScrollToken: model.manualScrollToken,
                 manualScrollDeltaPoints: model.manualScrollDeltaPoints,
-                fadeFraction: CGFloat(model.edgeFadeFraction),
+                fadeFraction: 0,
                 backgroundOpacity: model.backgroundOpacity,
                 isHovering: false,
                 scrollMode: model.scrollMode,
@@ -142,8 +143,8 @@ struct OverlayView: View {
                 }
             )
             .padding(.horizontal, 18)
-            .padding(.top, 58)
-            .padding(.bottom, 16)
+            .padding(.top, 0)
+            .padding(.bottom, model.isCameraMode ? 0 : 48)
             .clipShape(Rectangle())
             .overlay {
                 TrackpadScrollCaptureView { delta in
@@ -151,7 +152,7 @@ struct OverlayView: View {
                 }
             }
             
-            if !model.isCountingDown {
+            if !model.isCountingDown && !model.isCameraMode {
                 HStack {
                     HStack(spacing: 6) {
                         OverlayControlButton(
@@ -213,8 +214,8 @@ struct OverlayView: View {
                     )
                 }
                 .padding(.horizontal, 10)
-                .padding(.top, 8)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(.bottom, 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             }
 
             if model.isCountingDown {
@@ -228,7 +229,7 @@ struct OverlayView: View {
                 .allowsHitTesting(false)
             }
         }
-        .frame(width: model.overlayWidth, height: model.overlayHeight)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
