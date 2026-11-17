@@ -4,6 +4,9 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="${1:-$HOME/Applications/Notchprompt Camera.app}"
 sdk="${SDKROOT:-/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk}"
+if [[ -z "${SDKROOT:-}" && ! -d "$sdk" ]]; then
+    sdk="$(xcrun --sdk macosx --show-sdk-path)"
+fi
 test -d "$sdk" || { echo 'Set SDKROOT to an installed macOS SDK.' >&2; exit 1; }
 mkdir -p "$out/Contents/MacOS" "$out/Contents/Resources"
 xcrun swiftc -sdk "$sdk" -target "$(uname -m)-apple-macosx14.0" -swift-version 5 -O -parse-as-library "$root"/notchprompt/*.swift -o "$out/Contents/MacOS/notchprompt"

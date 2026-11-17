@@ -1,10 +1,40 @@
 # Notchprompt Camera
 
-Personal camera-mode fork of [saif0200/notchprompt](https://github.com/saif0200/notchprompt).
+A macOS teleprompter for recording, forked from [saif0200/notchprompt](https://github.com/saif0200/notchprompt).
 
-## Camera workflow
+## Install on another Mac
 
-Open the app, then use these controls:
+The app targets macOS 14 or newer. To build it, install Apple’s Command Line
+Tools or Xcode. The local build was verified with the macOS 26.5 SDK.
+
+1. In Terminal, run `xcode-select --install` if the tools are missing and finish
+   the installer. Check with `xcrun --sdk macosx --show-sdk-path`.
+2. Clone the fork, build from its default branch, and open the app:
+
+   ```sh
+   git clone https://github.com/ArthurZakirov/notchprompt.git
+   cd notchprompt
+   bash scripts/build_local_camera.sh
+   open "$HOME/Applications/Notchprompt Camera.app"
+   ```
+
+The script uses the installed macOS 26.5 SDK when available and otherwise uses
+the SDK selected by Apple’s tools. If the selected SDK fails to compile, use
+Apple tools that provide the verified SDK, or pass its absolute path via
+`SDKROOT`. The build signs the app locally with App Sandbox enabled.
+
+To update, quit Notchprompt Camera from its **NP** menu, then run
+`git pull --ff-only` in your clone and repeat the build and open commands.
+
+## Use Camera Mode
+
+1. Open **NP → Script Editor → Import** and select your Markdown or plain-text
+   script. Scripts and settings are stored locally on each Mac.
+2. In **NP → Settings → Display**, choose your display and, on a notched
+   MacBook, choose **Left of cutout**, **Right of cutout**, or
+   **Centered below cutout**.
+3. Press **Option–Command–F** to open Camera Mode. It hides the controls and
+   blacks out the surrounding displays.
 
 | Key | Action |
 | --- | --- |
@@ -15,125 +45,6 @@ Open the app, then use these controls:
 | R | Reset to the beginning in Camera Mode |
 | Escape | Stop playback, hide the prompt and restore the desktop |
 
-Camera Mode blacks out every connected display and places the script at the
-physical top-center of the display chosen in **NP → Settings**. The first line
-has no added top padding. The control row sits below the text in normal overlay
-mode and is hidden in Camera Mode. **NP → Script Editor → Import** loads a script.
-A camera above an external monitor is the intended setup; a physical MacBook
-notch can obscure text at the top center.
-
-## Local sandboxed build
-
-Build from inspected sources with Apple's Command Line Tools:
-
-```sh
-bash scripts/build_local_camera.sh
-```
-
-The script uses the installed macOS 26.5 SDK by default; set `SDKROOT` to select
-another compatible installed SDK. It builds only Swift sources and Apple
-frameworks, creates `~/Applications/Notchprompt Camera.app`, and applies an ad-hoc
-signature with App Sandbox, hardened runtime and user-selected file access.
-It grants no network, microphone, camera or Accessibility entitlements. This is
-a local build, not an Apple-notarized distribution, and is not a malware-free
-guarantee. No Gatekeeper settings need to be disabled.
-
-The upstream import/export feature can invoke Apple's `textutil` for office
-formats. Plain-text/Markdown import is the tested workflow; office conversion
-and capture invisibility are not guaranteed.
-
-## Upstream features
-
-<p align="center">
-  <img src="assets/banner.png" alt="Notchprompt Banner" width="100%">
-</p>
-
-Native macOS notch-adjacent teleprompter for presentations and recordings.
-
-## Quick Demo
-
-> Demo assets below are placeholders. Replace with real captures before public
-> launch.
-
-<!--
-![Notchprompt hero screenshot](docs/media/hero.png)
-*Hero view of the overlay panel and settings workflow.*
-
-![Notchprompt scrolling demo GIF](docs/media/notchprompt-demo.gif)
-*In-use scrolling demo with start/pause and speed adjustments.*
--->
-
-## Features
-
-- Menu bar utility workflow (`NP` status item).
-- Notch-adjacent floating overlay with transport controls.
-- Start/pause, reset, and jump back 5 seconds.
-- Adjustable speed, font size, overlay width, and overlay height.
-- Optional countdown before scrolling starts.
-- Import/export plain text scripts.
-- Privacy mode (`NSWindow.SharingType`, best-effort/app-dependent).
-
-## Requirements
-
-- macOS version supported by the current deployment target in
-  `notchprompt.xcodeproj`.
-- Apple Silicon or Intel Mac.
-
-## Install (Recommended)
-
-1. Open GitHub Releases:
-   `https://github.com/saif0200/notchprompt/releases`
-2. Download the latest `.dmg` release asset.
-3. Open the DMG and drag `notchprompt.app` to `Applications`.
-4. Launch `notchprompt.app`.
-
-### Unsigned Build Note
-
-This build is currently unsigned/unnotarized, so macOS may show security prompts.
-
-If macOS shows:
-
-- `Apple could not verify "notchprompt" is free of malware...`
-- or `"notchprompt" is damaged and can’t be opened`
-
-run:
-
-```bash
-xattr -cr /Applications/notchprompt.app
-open /Applications/notchprompt.app
-```
-
-If it is still blocked:
-
-1. Open `System Settings -> Privacy & Security`.
-2. Click **Open Anyway** for `notchprompt`.
-3. Launch again.
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-| --- | --- |
-| `⌥⌘P` | Start / Pause |
-| `⌥⌘R` | Reset scroll |
-| `⌥⌘J` | Jump back 5s |
-| `⌥⌘H` | Toggle Privacy Mode |
-| `⌥⌘=` | Increase speed |
-| `⌥⌘-` | Decrease speed |
-
-## Build From Source
-
-```bash
-git clone https://github.com/saif0200/notchprompt.git
-cd notchprompt
-open notchprompt.xcodeproj
-```
-
-CLI build:
-
-```bash
-xcodebuild -project notchprompt.xcodeproj -scheme notchprompt -configuration Debug build
-```
-
 ## License
 
-MIT. See `LICENSE`.
+[MIT](LICENSE).
