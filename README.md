@@ -28,7 +28,7 @@ To update, quit Notchprompt Camera from its **NP** menu, then run
 
 ## Use Camera Mode
 
-1. Open **NP → Script Editor → Import** and select your Markdown or plain-text
+1. Press **Option–Command–E** to open Script Editor, then choose **Import** and select your Markdown or plain-text
    script. Scripts and settings are stored locally on each Mac.
 2. In **NP → Settings → Display**, choose your display and, on a notched
    MacBook, choose **Left of cutout**, **Right of cutout**, or

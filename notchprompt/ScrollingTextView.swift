@@ -57,7 +57,7 @@ struct ScrollingTextView: View {
     }
 
     private var emptyStateMessage: String {
-        "No script yet.\nOpen NP → Script Editor to add your script."
+        "No script yet.\nPress ⌥⌘E to add your script."
     }
 
     private var clampedFadeFraction: CGFloat {

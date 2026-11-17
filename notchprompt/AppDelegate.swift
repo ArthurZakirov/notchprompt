@@ -343,6 +343,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     private func performShortcut(_ command: ShortcutCommand) {
         switch command {
+        case .scriptEditor:
+            if model.isCameraMode { model.toggleCameraMode() }
+            openScriptEditorWindow()
         case .cameraMode:
             model.toggleCameraMode()
         case .startPause:
